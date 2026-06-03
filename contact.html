@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .card-header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .card-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .card-header p {
+      color: #6b7280;
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #1a1a2e;
+      background: #fafafa;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+      background: #fff;
+    }
+
+    input::placeholder,
+    textarea::placeholder { color: #9ca3af; }
+
+    textarea { min-height: 130px; }
+
+    .field-error {
+      font-size: 0.78rem;
+      color: #ef4444;
+      display: none;
+    }
+
+    .field-error.visible { display: block; }
+
+    input.invalid,
+    textarea.invalid {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.8rem;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-submit:hover { background: #4f46e5; }
+    .btn-submit:active { transform: scale(0.98); }
+
+    .success-banner {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin-top: 1.25rem;
+      color: #15803d;
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+
+    .success-banner.visible { display: flex; }
+
+    .success-banner svg { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <h1>Contact Us</h1>
+      <p>Fill out the form below and we'll get back to you.</p>
+    </div>
+
+    <form id="contactForm" novalidate>
+      <div class="form-group">
+
+        <div class="field">
+          <label for="name">Name</label>
+          <input type="text" id="name" placeholder="John Doe" autocomplete="name">
+          <span class="field-error" id="nameError">Please enter your name.</span>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="john@example.com" autocomplete="email">
+          <span class="field-error" id="emailError">Please enter a valid email address.</span>
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="Write your message here..."></textarea>
+          <span class="field-error" id="messageError">Please enter a message.</span>
+        </div>
+
+        <button type="submit" class="btn-submit">Send Message</button>
+      </div>
+    </form>
+
+    <div class="success-banner" id="successBanner">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+      Thanks! Your message has been sent successfully.
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('contactForm');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const messageInput = document.getElementById('message');
+    const successBanner = document.getElementById('successBanner');
+
+    function isValidEmail(val) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    }
+
+    function setError(input, errorId, show) {
+      const errorEl = document.getElementById(errorId);
+      if (show) {
+        input.classList.add('invalid');
+        errorEl.classList.add('visible');
+      } else {
+        input.classList.remove('invalid');
+        errorEl.classList.remove('visible');
+      }
+    }
+
+    [nameInput, emailInput, messageInput].forEach(input => {
+      input.addEventListener('input', () => {
+        if (input === emailInput) {
+          setError(input, 'emailError', input.value.trim() && !isValidEmail(input.value.trim()));
+        } else {
+          setError(input, input.id + 'Error', false);
+        }
+      });
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const message = messageInput.value.trim();
+      let valid = true;
+
+      setError(nameInput, 'nameError', !name);
+      if (!name) valid = false;
+
+      setError(emailInput, 'emailError', !email || !isValidEmail(email));
+      if (!email || !isValidEmail(email)) valid = false;
+
+      setError(messageInput, 'messageError', !message);
+      if (!message) valid = false;
+
+      if (!valid) return;
+
+      form.reset();
+      successBanner.classList.add('visible');
+      setTimeout(() => successBanner.classList.remove('visible'), 5000);
+    });
+  </script>
+</body>
+</html>
