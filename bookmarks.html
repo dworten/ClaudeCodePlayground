@@ -221,6 +221,47 @@
       color: #ef4444;
       background: #fef2f2;
     }
+
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .search-wrapper svg {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      pointer-events: none;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 0.65rem 0.9rem 0.65rem 2.25rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #1a1a2e;
+      background: #fafafa;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    #searchInput:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+      background: #fff;
+    }
+
+    #searchInput::placeholder { color: #9ca3af; }
+
+    mark {
+      background: #e0e7ff;
+      color: #4f46e5;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
   </style>
 </head>
 <body>
@@ -245,6 +286,12 @@
         <h2>Saved Bookmarks</h2>
         <span class="count-badge" id="countBadge">0</span>
       </div>
+      <div class="search-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search bookmarks..." autocomplete="off">
+      </div>
       <div id="bookmarksContainer"></div>
     </div>
   </div>
@@ -256,6 +303,7 @@
     const errorMsg = document.getElementById('errorMsg');
     const bookmarksContainer = document.getElementById('bookmarksContainer');
     const countBadge = document.getElementById('countBadge');
+    const searchInput = document.getElementById('searchInput');
 
     function loadBookmarks() {
       return JSON.parse(localStorage.getItem('bookmarks') || '[]');
@@ -274,8 +322,20 @@
       }
     }
 
+    function highlight(text, query) {
+      if (!query) return escapeHtml(text);
+      const escaped = escapeHtml(text);
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return escaped.replace(new RegExp(escapedQuery, 'gi'), m => `<mark>${m}</mark>`);
+    }
+
     function render() {
       const bookmarks = loadBookmarks();
+      const query = searchInput.value.trim().toLowerCase();
+      const filtered = query
+        ? bookmarks.filter(bm => bm.title.toLowerCase().includes(query))
+        : bookmarks;
+
       countBadge.textContent = bookmarks.length;
 
       if (bookmarks.length === 0) {
@@ -290,17 +350,30 @@
         return;
       }
 
+      if (filtered.length === 0) {
+        bookmarksContainer.innerHTML = `
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
+            </svg>
+            <p>No bookmarks match "<strong>${escapeHtml(searchInput.value.trim())}</strong>".</p>
+          </div>`;
+        return;
+      }
+
       const ul = document.createElement('ul');
       ul.className = 'bookmark-list';
 
-      bookmarks.forEach((bm, index) => {
+      filtered.forEach((bm) => {
+        const index = bookmarks.indexOf(bm);
         const li = document.createElement('li');
         li.className = 'bookmark-item';
         li.innerHTML = `
           <img class="bookmark-favicon" src="${getFaviconUrl(bm.url)}" alt="" onerror="this.style.visibility='hidden'">
           <div class="bookmark-info">
             <a class="bookmark-link" href="${bm.url}" target="_blank" rel="noopener noreferrer">
-              <div class="bookmark-title">${escapeHtml(bm.title)}</div>
+              <div class="bookmark-title">${highlight(bm.title, searchInput.value.trim())}</div>
               <div class="bookmark-url">${escapeHtml(bm.url)}</div>
             </a>
           </div>
@@ -351,6 +424,8 @@
     titleInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') urlInput.focus();
     });
+
+    searchInput.addEventListener('input', render);
 
     bookmarksContainer.addEventListener('click', (e) => {
       const btn = e.target.closest('.btn-delete');
